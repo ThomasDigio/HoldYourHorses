@@ -4,7 +4,7 @@
 ## Notes: A lightweight (movable & resizable) indicator that tells you when you can or cannot mount
 ## Author: Orazur
 ## SavedVariables: HoldYourHorsesDB
-## IconTexture: Interface/AddOns/Can-i-mount/Assets/Logo.png
+## IconTexture: Interface/AddOns/HoldYourHorses/Assets/Logo.png
 ## Category: User Interface
 
 

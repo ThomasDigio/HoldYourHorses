@@ -1,1 +1,2 @@
-- Initial release
+- Added options panel with customisable texture using SharedMedia
+- Updated logo

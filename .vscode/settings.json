@@ -1,6 +1,13 @@
 {
   "Lua.diagnostics.globals": [
-    "UIParent"
+    "UIParent",
+    "UIDropDownMenu_Initialize",
+    "UIDropDownMenu_SetWidth",
+    "UIDropDownMenu_SetSelectedValue",
+    "UIDropDownMenu_SetText",
+    "UIDropDownMenu_AddButton",
+    "Settings",
+    "UIDropDownMenu_CreateInfo"
   ],
   "Lua.runtime.version": "Lua 5.1",
   "Lua.runtime.builtin": {

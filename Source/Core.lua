@@ -1,3 +1,8 @@
+local addonName = ...
+local AceAddon = LibStub("AceAddon-3.0")
+local AceDB = LibStub("AceDB-3.0")
+local LSM = LibStub("LibSharedMedia-3.0")
+
 local CHECK_SPELL_ID = 150544 -- Summon Random Favorite Mount
 local ATLAS_NAME = "Fyrakk-Flying-Icon"
 
@@ -7,94 +12,113 @@ local MIN_SIZE = 20
 local DEFAULT_SIZE = 64
 local MAX_SIZE = 250
 
--- Create the icon
-local frame = CreateFrame("Frame", "HoldYourHorsesFrame", UIParent)
-frame:SetSize(DEFAULT_SIZE, DEFAULT_SIZE)
-frame:SetPoint("CENTER")
-frame:SetClampedToScreen(true)
-local texture = frame:CreateTexture(nil, "BACKGROUND")
-texture:SetAllPoints(frame)
-texture:SetAtlas(ATLAS_NAME, true)
+---@class HoldYourHorses: AceAddon
+local HoldYourHorses = AceAddon:NewAddon(addonName)
 
--- Repositioning
-frame:SetMovable(true)
-frame:EnableMouse(true)
-frame:RegisterForDrag("LeftButton")
-frame:SetScript("OnDragStart", function(self)
-    if not InCombatLockdown() then
-        self:StartMoving()
+HoldYourHorses.metadata = {
+    TITLE = "Title",
+    LOGO_PATH = "IconTexture",
+    DESCRIPTION = "Notes"
+}
+
+function HoldYourHorses:OnInitialize()
+    -- Fetch metadata
+    for keyName, keyValue in pairs(self.metadata) do
+        self.metadata[keyName] = C_AddOns.GetAddOnMetadata(addonName, keyValue)
     end
-end)
-frame:SetScript("OnDragStop", function(self)
-    self:StopMovingOrSizing()
-    local point, _, relativePoint, x, y = self:GetPoint()
-    HoldYourHorsesDB.point = point
-    HoldYourHorsesDB.relativePoint = relativePoint
-    HoldYourHorsesDB.x = x
-    HoldYourHorsesDB.y = y
-end)
 
--- Resizing
-frame:EnableMouseWheel(true)
-frame:SetScript("OnMouseWheel", function(self, delta)
-    local currentSize = HoldYourHorsesDB.size or DEFAULT_SIZE
+    -- Setup the options database + panel
+    self.databaseDefaults = {
+        global = {
+            texture = "Fyrakk",
+            size = DEFAULT_SIZE,
+            point = "CENTER",
+            relativePoint = nil,
+            x = 0,
+            y = 0,
+        }
+    }
+    self.db = AceDB:New(addonName .. "DB", self.databaseDefaults)
+    LSM:Register("background", "Hold Your Horses", self.metadata.LOGO_PATH) -- Register the logo texture as an option
+    self:CreateOptionsPanel()
 
-    if delta > 0 then
-        currentSize = currentSize + 5
+    self:CreateFrame()
+end
+
+function HoldYourHorses:UpdateTexture()
+    local textureName = self.db.global.texture
+    if textureName == "Fyrakk" then
+        self.texture:SetAtlas(ATLAS_NAME, true)
     else
-        currentSize = currentSize - 5
+        self.texture:SetTexture(LSM:Fetch("background", textureName))
+        self.texture:SetTexCoord(0, 1, 0, 1)
     end
+end
 
-    if currentSize < MIN_SIZE then
-        currentSize = MIN_SIZE
+function HoldYourHorses:CreateFrame()
+    self.frame = CreateFrame("Frame", "HoldYourHorsesFrame", UIParent)
+
+    self.frame:SetSize(self.db.global.size, self.db.global.size)
+    if self.db.global.point then
+        self.frame:SetPoint(self.db.global.point, UIParent, self.db.global.relativePoint, self.db.global.x,
+            self.db.global.y)
+    else
+        self.frame:SetPoint("CENTER")
     end
-    if currentSize > MAX_SIZE then
-        currentSize = MAX_SIZE
-    end
+    self.frame:SetClampedToScreen(true)
 
-    self:SetSize(currentSize, currentSize)
-    HoldYourHorsesDB.size = currentSize
-end)
+    local texture = self.frame:CreateTexture(nil, "BACKGROUND")
+    texture:SetAllPoints(self.frame)
+    self.texture = texture
 
--- Restore on Login
-frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-frame:SetScript("OnEvent", function(self)
-    -- Initialize DB if it's the very first time loading
-    if not HoldYourHorsesDB then
-        HoldYourHorsesDB = {}
-    end
+    self:UpdateTexture()
 
-    -- Restore Size
-    if HoldYourHorsesDB.size then
-        frame:SetSize(HoldYourHorsesDB.size, HoldYourHorsesDB.size)
-    end
-
-    -- Restore Position
-    if HoldYourHorsesDB.point then
-        frame:ClearAllPoints()
-        frame:SetPoint(HoldYourHorsesDB.point, UIParent, HoldYourHorsesDB.relativePoint, HoldYourHorsesDB.x,
-        HoldYourHorsesDB.y)
-    end
-end)
-
--- Can we mount?
-local timeSinceLastUpdate = 0
-frame:SetScript("OnUpdate", function(self, elapsed)
-    timeSinceLastUpdate = timeSinceLastUpdate + elapsed
-
-    if timeSinceLastUpdate > UPDATE_INTERVAL then
-        if C_PetBattles and C_PetBattles.IsInBattle and C_PetBattles.IsInBattle() then
-            self:SetAlpha(0)
-        elseif C_Spell.IsSpellUsable(CHECK_SPELL_ID) and not InCombatLockdown() then
-            self:SetAlpha(1)
-            texture:SetDesaturated(false)
-            texture:SetVertexColor(1, 1, 1, 1)
-        else
-            self:SetAlpha(1)
-            texture:SetDesaturated(true)
-            texture:SetVertexColor(0.6, 0.6, 0.6, 1)
+    -- Repositioning
+    self.frame:SetMovable(true)
+    self.frame:EnableMouse(true)
+    self.frame:RegisterForDrag("LeftButton")
+    self.frame:SetScript("OnDragStart", function(f)
+        if not InCombatLockdown() then
+            f:StartMoving()
         end
+    end)
+    self.frame:SetScript("OnDragStop", function(f)
+        f:StopMovingOrSizing()
+        local point, _, relativePoint, x, y = f:GetPoint()
+        self.db.global.point = point
+        self.db.global.relativePoint = relativePoint
+        self.db.global.x = x
+        self.db.global.y = y
+    end)
 
-        timeSinceLastUpdate = 0
-    end
-end)
+    -- Resizing
+    self.frame:EnableMouseWheel(true)
+    self.frame:SetScript("OnMouseWheel", function(f, delta)
+        local currentSize = self.db.global.size
+        if delta > 0 then currentSize = currentSize + 5 else currentSize = currentSize - 5 end
+        currentSize = math.max(MIN_SIZE, math.min(MAX_SIZE, currentSize))
+
+        f:SetSize(currentSize, currentSize)
+        self.db.global.size = currentSize
+    end)
+
+    -- OnUpdate
+    local timeSinceLastUpdate = 0
+    self.frame:SetScript("OnUpdate", function(f, elapsed)
+        timeSinceLastUpdate = timeSinceLastUpdate + elapsed
+        if timeSinceLastUpdate > UPDATE_INTERVAL then
+            if C_PetBattles and C_PetBattles.IsInBattle and C_PetBattles.IsInBattle() then
+                f:SetAlpha(0)
+            elseif C_Spell.IsSpellUsable(CHECK_SPELL_ID) and not InCombatLockdown() then
+                f:SetAlpha(1)
+                texture:SetDesaturated(false)
+                texture:SetVertexColor(1, 1, 1, 1)
+            else
+                f:SetAlpha(1)
+                texture:SetDesaturated(true)
+                texture:SetVertexColor(0.6, 0.6, 0.6, 1)
+            end
+            timeSinceLastUpdate = 0
+        end
+    end)
+end

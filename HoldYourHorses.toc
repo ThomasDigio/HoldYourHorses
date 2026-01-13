@@ -1,11 +1,20 @@
 ## Interface: 110207, 50503, 11508
 ## Version: 1.0
 ## Title: |cffee992bHo|r|cffe89830ld|r |cffe29836Y|r|cffdd973co|r|cffd79743u|r|cffd19547r|r |cffcb954dHo|r|cffc69453rs|r|cffc09359e|r|cffba925es|r
-## Notes: A lightweight (movable & resizable) indicator that tells you when you can or cannot mount
+## Notes: A lightweight customisable indicator that tells you when you can or cannot mount
 ## Author: Orazur
 ## SavedVariables: HoldYourHorsesDB
 ## IconTexture: Interface/AddOns/HoldYourHorses/Assets/Logo.png
 ## Category: User Interface
 
+Libraries/LibStub/LibStub.lua
+Libraries/CallbackHandler/CallbackHandler-1.0.xml
+Libraries/Ace3/AceAddon/AceAddon-3.0.xml
+Libraries/Ace3/AceGUI/AceGUI-3.0.xml
+Libraries/Ace3/AceConfigRegistry/AceConfigRegistry-3.0.xml
+Libraries/Ace3/AceConfigDialog/AceConfigDialog-3.0.xml
+Libraries/Ace3/AceDB/AceDB-3.0.xml
+Libraries/LibSharedMedia/lib.xml
 
 Source/Core.lua
+Source/Options.lua

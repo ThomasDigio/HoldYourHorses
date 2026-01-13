@@ -1,15 +1,14 @@
 local addonName, addonTable = ...
 local LSM = LibStub("LibSharedMedia-3.0")
 
--- Constants
 local CHECK_SPELL_ID = 150544 -- Summon Random Favorite Mount
 local ATLAS_NAME = "Fyrakk-Flying-Icon"
-local UPDATE_INTERVAL = 0.5   -- seconds
+
+local UPDATE_INTERVAL = 0.5 -- seconds
 local MIN_SIZE = 20
 local DEFAULT_SIZE = 64
 local MAX_SIZE = 250
 
--- Default Settings
 local defaults = {
     texture = "Fyrakk",
     size = DEFAULT_SIZE,

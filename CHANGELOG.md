@@ -1,2 +1,1 @@
-- Added options panel with customisable texture using SharedMedia
-- Updated logo
+- Slightly reworked mount-checking logic to be more consistent

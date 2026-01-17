@@ -1,7 +1,7 @@
 local addonName, addonTable = ...
 local LSM = LibStub("LibSharedMedia-3.0")
 
-local CHECK_SPELL_ID = 150544 -- Summon Random Favorite Mount
+local CHECK_SPELL_ID = 48954 -- Swift Zhevra, but could be any mount spell ID
 local ATLAS_NAME = "Fyrakk-Flying-Icon"
 
 local UPDATE_INTERVAL = 0.5 -- seconds
@@ -24,14 +24,13 @@ addonTable.metadata = {
     DESCRIPTION = "Notes"
 }
 
--- Event Handling Frame
+-- Create a frame to know when the addon/UI is getting loaded
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("ADDON_LOADED")
 eventFrame:RegisterEvent("PLAYER_LOGIN")
-
 eventFrame:SetScript("OnEvent", function(self, event, arg1)
     if event == "ADDON_LOADED" and arg1 == addonName then
-        -- Initialize Database
+        -- Initialise Database
         HoldYourHorsesDB = HoldYourHorsesDB or {}
         for k, v in pairs(defaults) do
             if HoldYourHorsesDB[k] == nil then
@@ -39,39 +38,29 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
             end
         end
         addonTable.db = HoldYourHorsesDB
+
+        -- Fetch metadata
+        for key, value in pairs(addonTable.metadata) do
+            addonTable.metadata[key] = C_AddOns.GetAddOnMetadata(addonName, value)
+        end
     elseif event == "PLAYER_LOGIN" then
-        addonTable:OnInitialize()
+        -- Register the logo texture as an option in LSM
+        LSM:Register("background", "Hold Your Horses", addonTable.metadata.LOGO_PATH)
+
+        -- Initialise everything
+        addonTable:CreateFrame()
+        addonTable:CreateOptionsPanel()
     end
 end)
 
-function addonTable:OnInitialize()
-    -- Fetch metadata
-    for keyName, keyValue in pairs(self.metadata) do
-        self.metadata[keyName] = C_AddOns.GetAddOnMetadata(addonName, keyValue) or keyValue
-    end
-
-    -- Register the logo texture as an option in LSM
-    LSM:Register("background", "Hold Your Horses", self.metadata.LOGO_PATH)
-
-    -- Initialize Components
-    self:CreateFrame()
-
-    -- Initialize Options Panel (if loaded)
-    if self.CreateOptionsPanel then
-        self:CreateOptionsPanel()
-    end
-end
-
 function addonTable:UpdateTexture()
-    if not self.texture or not self.db then return end
-
     local textureName = self.db.texture
     if textureName == "Fyrakk" then
-        self.texture:SetAtlas(ATLAS_NAME, true)
+        self.appliedTexture:SetAtlas(ATLAS_NAME, true)
     else
         local lsmTexture = LSM:Fetch("background", textureName)
-        self.texture:SetTexture(lsmTexture)
-        self.texture:SetTexCoord(0, 1, 0, 1)
+        self.appliedTexture:SetTexture(lsmTexture)
+        self.appliedTexture:SetTexCoord(0, 1, 0, 1)
     end
 end
 
@@ -88,8 +77,7 @@ function addonTable:CreateFrame()
 
     local texture = self.frame:CreateTexture(nil, "BACKGROUND")
     texture:SetAllPoints(self.frame)
-    self.texture = texture
-
+    self.appliedTexture = texture
     self:UpdateTexture()
 
     -- Repositioning
@@ -121,21 +109,27 @@ function addonTable:CreateFrame()
         self.db.size = currentSize
     end)
 
-    -- OnUpdate
+    -- Grab a mount usable by the user
+    -- local probeMountID = nil
+    -- for _, id in ipairs(C_MountJournal.GetMountIDs()) do
+    --     local _, _, _, _, _, _, _, _, _, _, isCollected = C_MountJournal.GetMountInfoByID(id)
+    --     if isCollected then
+    --         probeMountID = id
+    --         break
+    --     end
+    -- end
+
+    -- Can we mount?
     local timeSinceLastUpdate = 0
     self.frame:SetScript("OnUpdate", function(f, elapsed)
         timeSinceLastUpdate = timeSinceLastUpdate + elapsed
         if timeSinceLastUpdate > UPDATE_INTERVAL then
-            if C_PetBattles and C_PetBattles.IsInBattle and C_PetBattles.IsInBattle() then
+            if C_PetBattles.IsInBattle() then
                 f:SetAlpha(0)
-            elseif C_Spell.IsSpellUsable(CHECK_SPELL_ID) and not InCombatLockdown() then
-                f:SetAlpha(1)
-                texture:SetDesaturated(false)
-                texture:SetVertexColor(1, 1, 1, 1)
             else
                 f:SetAlpha(1)
-                texture:SetDesaturated(true)
-                texture:SetVertexColor(0.6, 0.6, 0.6, 1)
+                -- texture:SetDesaturated(not (probeMountID and C_MountJournal.GetMountUsabilityByID(probeMountID, true)))
+                texture:SetDesaturated(not C_Spell.IsSpellUsable(CHECK_SPELL_ID))
             end
             timeSinceLastUpdate = 0
         end

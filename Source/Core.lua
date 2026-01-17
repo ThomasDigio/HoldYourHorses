@@ -109,16 +109,6 @@ function addonTable:CreateFrame()
         self.db.size = currentSize
     end)
 
-    -- Grab a mount usable by the user
-    -- local probeMountID = nil
-    -- for _, id in ipairs(C_MountJournal.GetMountIDs()) do
-    --     local _, _, _, _, _, _, _, _, _, _, isCollected = C_MountJournal.GetMountInfoByID(id)
-    --     if isCollected then
-    --         probeMountID = id
-    --         break
-    --     end
-    -- end
-
     -- Can we mount?
     local timeSinceLastUpdate = 0
     self.frame:SetScript("OnUpdate", function(f, elapsed)
@@ -128,7 +118,6 @@ function addonTable:CreateFrame()
                 f:SetAlpha(0)
             else
                 f:SetAlpha(1)
-                -- texture:SetDesaturated(not (probeMountID and C_MountJournal.GetMountUsabilityByID(probeMountID, true)))
                 texture:SetDesaturated(not C_Spell.IsSpellUsable(CHECK_SPELL_ID))
             end
             timeSinceLastUpdate = 0

@@ -1,7 +1,7 @@
 local addonName, addonTable = ...
 local LSM = LibStub("LibSharedMedia-3.0")
 
-local CHECK_SPELL_ID = 48954 -- Swift Zhevra, but could be any mount spell ID
+local CHECK_SPELL_ID = 5784 -- Felsteed, but could be any mount spell ID present in all game flavours
 local ATLAS_NAME = "Fyrakk-Flying-Icon"
 
 local UPDATE_INTERVAL = 0.5 -- seconds

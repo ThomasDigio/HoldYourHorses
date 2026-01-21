@@ -1,4 +1,4 @@
-## Interface: 110207, 50503, 11508
+## Interface: 120000, 50503, 11508
 ## Version: 1.2
 ## Title: |cffee992bHo|r|cffe89830ld|r |cffe29836Y|r|cffdd973co|r|cffd79743u|r|cffd19547r|r |cffcb954dHo|r|cffc69453rs|r|cffc09359e|r|cffba925es|r
 ## Notes: A lightweight customisable indicator that tells you when you can or cannot mount

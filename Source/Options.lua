@@ -3,7 +3,6 @@ local LSM = LibStub("LibSharedMedia-3.0")
 
 function addonTable:CreateOptionsPanel()
     local panel = CreateFrame("Frame", addonName .. "OptionsPanel")
-    panel.name = "Hold Your Horses"
 
     local function CreateSectionHeader(parent, text, relativeTo, yOffset)
         local headerFrame = CreateFrame("Frame", nil, parent)
@@ -34,42 +33,34 @@ function addonTable:CreateOptionsPanel()
         return headerFrame
     end
 
-    -- Main Title
     local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    title:SetPoint("TOPLEFT", 16, -16)
+    title:SetPoint("TOPLEFT", 15, -15)
     title:SetText(self.metadata.TITLE)
-    title:SetTextColor(1, 0.82, 0)
 
-    -- "About" Header
     local aboutHeader = CreateSectionHeader(panel, "About", title, -20)
+    local aboutLogo = panel:CreateTexture(nil, "ARTWORK")
+    aboutLogo:SetSize(64, 64)
+    aboutLogo:SetPoint("TOPLEFT", aboutHeader, "BOTTOMLEFT", 10, -15)
+    aboutLogo:SetTexture(self.metadata.LOGO_PATH)
+    local aboutDescription = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+    aboutDescription:SetPoint("LEFT", aboutLogo, "RIGHT", 20, 0)
+    aboutDescription:SetPoint("RIGHT", panel, "RIGHT", -20, 0)
+    aboutDescription:SetPoint("TOP", aboutLogo, "TOP")
+    aboutDescription:SetPoint("BOTTOM", aboutLogo, "BOTTOM")
+    aboutDescription:SetJustifyH("LEFT")
+    aboutDescription:SetJustifyV("MIDDLE")
+    aboutDescription:SetText(self.metadata.DESCRIPTION)
 
-    local logo = panel:CreateTexture(nil, "ARTWORK")
-    logo:SetSize(64, 64)
-    logo:SetPoint("TOPLEFT", aboutHeader, "BOTTOMLEFT", 10, -15)
-    logo:SetTexture(self.metadata.LOGO_PATH)
-    
-    local desc = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-    desc:SetPoint("LEFT", logo, "RIGHT", 20, 0)
-    desc:SetPoint("RIGHT", panel, "RIGHT", -20, 0)
-    desc:SetPoint("TOP", logo, "TOP")
-    desc:SetPoint("BOTTOM", logo, "BOTTOM")
-    desc:SetJustifyH("LEFT")
-    desc:SetJustifyV("MIDDLE")
-    desc:SetText(self.metadata.DESCRIPTION)
-
-    -- "Config" Header
-    local configHeader = CreateSectionHeader(panel, "Config", logo, -30)
-
-    local repoText = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-    repoText:SetPoint("TOPLEFT", configHeader, "BOTTOMLEFT", 16, -15)
-    repoText:SetPoint("RIGHT", panel, "RIGHT", -16, 0)
-    repoText:SetJustifyH("LEFT")
-    repoText:SetText(
+    local configHeader = CreateSectionHeader(panel, "Config", aboutLogo, -30)
+    local configText = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+    configText:SetPoint("TOPLEFT", configHeader, "BOTTOMLEFT", 16, -15)
+    configText:SetPoint("RIGHT", panel, "RIGHT", -16, 0)
+    configText:SetJustifyH("LEFT")
+    configText:SetText(
         "You can move the icon by dragging it with the mouse and resize it with the mouse wheel. The position will be saved automatically!")
 
-        local dropDown = CreateFrame("Frame", addonName .. "TextureDropDown", panel, "UIDropDownMenuTemplate")
-    dropDown:SetPoint("TOPLEFT", repoText, "BOTTOMLEFT", -15, -20)
-
+    local dropDown = CreateFrame("Frame", addonName .. "TextureDropDown", panel, "UIDropDownMenuTemplate")
+    dropDown:SetPoint("TOPLEFT", configText, "BOTTOMLEFT", -15, -20)
     local dropDownLabel = dropDown:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
     dropDownLabel:SetPoint("BOTTOMLEFT", dropDown, "TOPLEFT", 16, 3)
     dropDownLabel:SetText("Texture")
@@ -84,26 +75,23 @@ function addonTable:CreateOptionsPanel()
     local function InitializeDropDown(self, level)
         local info = UIDropDownMenu_CreateInfo()
 
-        -- Fyrakk
+        -- Addon-specific
         info.text = "Fyrakk"
         info.value = "Fyrakk"
         info.func = OnClick
         info.checked = (addonTable.db.texture == "Fyrakk")
         UIDropDownMenu_AddButton(info, level)
-
-        -- Custom
         info.text = "Hold Your Horses"
         info.value = "Hold Your Horses"
         info.func = OnClick
         info.checked = (addonTable.db.texture == "Hold Your Horses")
         UIDropDownMenu_AddButton(info, level)
 
-        -- LSM Backgrounds
+        -- SharedMedia
         local backgrounds = LSM:HashTable("background")
         local sortedKeys = {}
         for k in pairs(backgrounds) do table.insert(sortedKeys, k) end
         table.sort(sortedKeys)
-
         for _, key in ipairs(sortedKeys) do
             if key ~= "Hold Your Horses" then
                 info.text = key
@@ -120,7 +108,7 @@ function addonTable:CreateOptionsPanel()
     UIDropDownMenu_SetSelectedValue(dropDown, addonTable.db.texture or "Fyrakk")
     UIDropDownMenu_SetText(dropDown, addonTable.db.texture or "Fyrakk")
 
-    -- Register with Blizzard Settings
+    -- Register with Blizzard settings
     local category = Settings.RegisterCanvasLayoutCategory(panel, "Hold Your Horses")
     Settings.RegisterAddOnCategory(category)
     addonTable.settingsCategory = category
